@@ -1,0 +1,6 @@
+bitsandbytes
+accelerate
+peft
+datasets
+trl
+python_dotenv
