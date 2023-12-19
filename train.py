@@ -1,17 +1,17 @@
 from datasets import load_dataset #library to load dataset
-from random imort randrange # library alllowing to do the random operation
+from random import randrange # library alllowing to do the random operation
 import torch #it's an open source library used to do scientifi compute and automatic learning
-from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesCongig, TrainingArguments
-from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model, AutoPeftModelForCausal #library allow to config our Loraconfig peft in the order to fine tuning our Model
+from transformers import AutoTokenizer, AutoModelForCausalLM, BitsAndBytesConfig, TrainingArguments
+from peft import LoraConfig, prepare_model_for_kbit_training, get_peft_model, AutoPeftModelForCausalLM #library allow to config our Loraconfig peft in the order to fine tuning our Model
 from trl import SFTTrainer
 
 from huggingface_hub import login
 from dotenv import load_dotenv
 import os
 
-import argprse
+import argparse
 
-if_name_=="_main_":
+if __name__=="_main_":
     #Parse the arguments
     parser = argparse.ArgumentParser()
     #Model "bertin-project/bertin-roberta-base-spanish"
@@ -19,7 +19,7 @@ if_name_=="_main_":
     parser.add_argument("--dataset", type=str, default="GAIR/lima")
     parser.add_argument("--split", type=str, default="train[:10%]")
     parser.add_argument("--hf_repo", type=str, required=True)
-    arser.add_argument("--lr", type=float, default=2e-4)
+    parser.add_argument("--lr", type=float, default=2e-4)
     parser.add_argument("--epochs", type=int, default=3)
     parser.add_argument("--trained-model-name", type=str, required=True)
     parser.add_argument("--bf16", action='store_true')
@@ -106,6 +106,7 @@ if_name_=="_main_":
     ##################################################################################################
     #maximum sequence length to use
     # max sequence length = 2048 # None
+    max_seq_length = 2048 #none
     #Pack multiple short examples in the same input sequence to increase efficiency
     packing = True # False
 
@@ -132,7 +133,7 @@ if_name_=="_main_":
             {sample['response']}
             """
 
-            return string
+        return string
 
     #Print an instruction
     print(format_instruction(dataset[randrange(len(dataset))]))
@@ -140,7 +141,7 @@ if_name_=="_main_":
     compute_dtype = getattr(torch, bnb_4bit_compute_dtype)
 
     #BitsandBytesConfig int-4 config
-    bnb_config = BitsandBytesConfig(
+    bnb_config = BitsAndBytesConfig(
         load_in_4bit=use_4bit,
         bnb_4bit_use_double_quant=use_double_nested_quant,
         bnd_4bit_quant_type=bnb_4bit_quant_type,
@@ -224,7 +225,7 @@ if_name_=="_main_":
     #load the saved model
     model = AutoPeftModelForCausalLM.from_pretrained(
         args.output_dir,
-        low_cpu_mem_usage=true,
+        low_cpu_mem_usage=True,
         return_dict=True,
         torch_dtype=torch.float16,
         device_map=device_map,
@@ -232,8 +233,8 @@ if_name_=="_main_":
     #merge LoRA and base model
     merged_model = model.merge_and_unload()
     #save the merged model
-    merged_model.save_pretrained("merged_model",sfe_serialization=True)
-    tokenizer.save pretrained("merged_model")
+    merged_model.save_pretrained("merged_model",safe_serialization=True)
+    tokenizer.save_pretrained("merged_model")
 
     #push merged model to the hub
     #merged_model.push_to_hub(hf_model_repo)
